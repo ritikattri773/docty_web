@@ -11,7 +11,7 @@ export const useAuth = () => {
   return context;
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const API_URL = import.meta.env.VITE_API_URL || 'https://docty-web-1.onrender.com';
 
 // Configure axios defaults
 const axiosInstance = axios.create({
