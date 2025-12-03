@@ -235,6 +235,17 @@ const listAppointment = async (req, res) => {
     }
 }
 
+// API to get all doctors list for frontend
+const listDoctors = async (req, res) => {
+    try {
+        const doctors = await doctorModel.find({ available: true }).select('-password')
+        res.json({ success: true, doctors })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
 // API to make payment of appointment using razorpay
 const paymentRazorpay = async (req, res) => {
     try {
@@ -351,6 +362,7 @@ export {
     bookAppointment,
     listAppointment,
     cancelAppointment,
+    listDoctors,
     paymentRazorpay,
     verifyRazorpay,
     paymentStripe,
