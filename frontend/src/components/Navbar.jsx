@@ -1,130 +1,77 @@
-import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import React, { useContext, useState } from 'react'
+import { assets } from '../assets/assets'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { AppContext } from '../context/AppContext'
 
-function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, logout } = useAuth()
+const Navbar = () => {
+
   const navigate = useNavigate()
-  const location = useLocation()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
-    setIsMenuOpen(false)
-  }
+  const [showMenu, setShowMenu] = useState(false)
+  const { token, setToken, userData } = useContext(AppContext)
 
-  const handleLoginClick = () => {
+  const logout = () => {
+    localStorage.removeItem('token')
+    setToken(false)
     navigate('/login')
-    setIsMenuOpen(false)
-  }
-
-  // Don't show navbar on login/signup pages
-  if (location.pathname === '/login' || location.pathname === '/signup') {
-    return null
   }
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Left side - Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-blue-600">Docty</span>
-            </Link>
-          </div>
+    <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-[#ADADAD]'>
+      <img onClick={() => navigate('/')} className='w-44 cursor-pointer' src={assets.logo} alt="" />
+      <ul className='md:flex items-start gap-5 font-medium hidden'>
+        <NavLink to='/' >
+          <li className='py-1'>HOME</li>
+          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        </NavLink>
+        <NavLink to='/doctors' >
+          <li className='py-1'>ALL DOCTORS</li>
+          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        </NavLink>
+        <NavLink to='/about' >
+          <li className='py-1'>ABOUT</li>
+          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        </NavLink>
+        <NavLink to='/contact' >
+          <li className='py-1'>CONTACT</li>
+          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        </NavLink>
+      </ul>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#home" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              Home
-            </a>
-            <a href="#doctors" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              Doctors
-            </a>
-            <a href="#about" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              About
-            </a>
-            <a href="#contacts" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              Contacts
-            </a>
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-700 font-medium">Welcome, {user.name}</span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                >
-                  Logout
-                </button>
+      <div className='flex items-center gap-4 '>
+        {
+          token && userData
+            ? <div className='flex items-center gap-2 cursor-pointer group relative'>
+              <img className='w-8 rounded-full' src={userData.image} alt="" />
+              <img className='w-2.5' src={assets.dropdown_icon} alt="" />
+              <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block'>
+                <div className='min-w-48 bg-gray-50 rounded flex flex-col gap-4 p-4'>
+                  <p onClick={() => navigate('/my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
+                  <p onClick={() => navigate('/my-appointments')} className='hover:text-black cursor-pointer'>My Appointments</p>
+                  <p onClick={logout} className='hover:text-black cursor-pointer'>Logout</p>
+                </div>
               </div>
-            ) : (
-              <button
-                onClick={handleLoginClick}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Login
-              </button>
-            )}
-          </div>
+            </div>
+            : <button onClick={() => navigate('/login')} className='bg-primary text-white px-8 py-3 rounded-full font-light hidden md:block'>Create account</button>
+        }
+        <img onClick={() => setShowMenu(true)} className='w-6 md:hidden' src={assets.menu_icon} alt="" />
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-blue-600 focus:outline-none"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
+        {/* ---- Mobile Menu ---- */}
+        <div className={`md:hidden ${showMenu ? 'fixed w-full' : 'h-0 w-0'} right-0 top-0 bottom-0 z-20 overflow-hidden bg-white transition-all`}>
+          <div className='flex items-center justify-between px-5 py-6'>
+            <img src={assets.logo} className='w-36' alt="" />
+            <img onClick={() => setShowMenu(false)} src={assets.cross_icon} className='w-7' alt="" />
           </div>
+          <ul className='flex flex-col items-center gap-2 mt-5 px-5 text-lg font-medium'>
+            <NavLink onClick={() => setShowMenu(false)} to='/'><p className='px-4 py-2 rounded full inline-block'>HOME</p></NavLink>
+            <NavLink onClick={() => setShowMenu(false)} to='/doctors' ><p className='px-4 py-2 rounded full inline-block'>ALL DOCTORS</p></NavLink>
+            <NavLink onClick={() => setShowMenu(false)} to='/about' ><p className='px-4 py-2 rounded full inline-block'>ABOUT</p></NavLink>
+            <NavLink onClick={() => setShowMenu(false)} to='/contact' ><p className='px-4 py-2 rounded full inline-block'>CONTACT</p></NavLink>
+          </ul>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4 space-y-4">
-            <a href="#home" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              Home
-            </a>
-            <a href="#doctors" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              Doctors
-            </a>
-            <a href="#about" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              About
-            </a>
-            <a href="#contacts" className="block text-gray-700 hover:text-blue-600 transition-colors font-medium">
-              Contacts
-            </a>
-            {user ? (
-              <div className="space-y-4">
-                <div className="text-gray-700 font-medium py-2">Welcome, {user.name}</div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleLoginClick}
-                className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Login
-              </button>
-            )}
-          </div>
-        )}
       </div>
-    </nav>
+    </div>
   )
 }
 
 export default Navbar
-
