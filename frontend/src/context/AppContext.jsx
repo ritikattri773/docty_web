@@ -15,21 +15,40 @@ const AppContextProvider = (props) => {
 
     // Getting Doctors using API
     const getDoctosData = async () => {
-
         try {
+            // Check if backendUrl is set
+            if (!backendUrl) {
+                console.error('❌ VITE_BACKEND_URL is not set in environment variables!')
+                toast.error('Backend URL not configured. Please check your .env file.')
+                return
+            }
 
+            console.log('Fetching doctors from:', backendUrl + '/api/doctor/list')
             const { data } = await axios.get(backendUrl + '/api/doctor/list')
+            
             if (data.success) {
-                setDoctors(data.doctors)
+                console.log('✅ Doctors loaded:', data.doctors?.length || 0, 'doctors')
+                setDoctors(data.doctors || [])
             } else {
+                console.error('❌ API returned error:', data.message)
                 toast.error(data.message)
             }
 
         } catch (error) {
-            console.log(error)
-            toast.error(error.message)
+            console.error('❌ Error fetching doctors:', error)
+            console.error('Error details:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                url: backendUrl + '/api/doctor/list'
+            })
+            
+            if (error.code === 'ERR_NETWORK') {
+                toast.error('Cannot connect to backend server. Make sure the backend is running.')
+            } else {
+                toast.error(error.response?.data?.message || error.message || 'Failed to load doctors')
+            }
         }
-
     }
 
     // Getting User Profile using API

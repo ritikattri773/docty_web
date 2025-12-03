@@ -8,9 +8,10 @@ const Doctors = () => {
 
   const [filterDoc, setFilterDoc] = useState([])
   const [showFilter, setShowFilter] = useState(false)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate();
 
-  const { doctors } = useContext(AppContext)
+  const { doctors, backendUrl } = useContext(AppContext)
 
   const applyFilter = () => {
     if (speciality) {
@@ -18,11 +19,28 @@ const Doctors = () => {
     } else {
       setFilterDoc(doctors)
     }
+    setLoading(false)
   }
 
   useEffect(() => {
-    applyFilter()
+    // Debug logging
+    console.log('Doctors from context:', doctors)
+    console.log('Backend URL:', backendUrl)
+    console.log('FilterDoc:', filterDoc)
+    
+    if (doctors !== undefined) {
+      applyFilter()
+    }
   }, [doctors, speciality])
+
+  // Show loading state
+  if (loading && doctors.length === 0) {
+    return (
+      <div className='flex items-center justify-center min-h-[400px]'>
+        <p className='text-gray-600'>Loading doctors...</p>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -38,18 +56,32 @@ const Doctors = () => {
           <p onClick={() => speciality === 'Gastroenterologist' ? navigate('/doctors') : navigate('/doctors/Gastroenterologist')} className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${speciality === 'Gastroenterologist' ? 'bg-[#E2E5FF] text-black ' : ''}`}>Gastroenterologist</p>
         </div>
         <div className='w-full grid grid-cols-auto gap-4 gap-y-6'>
-          {filterDoc.map((item, index) => (
-            <div onClick={() => { navigate(`/appointment/${item._id}`); scrollTo(0, 0) }} className='border border-[#C9D8FF] rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500' key={index}>
-              <img className='bg-[#EAEFFF]' src={item.image} alt="" />
-              <div className='p-4'>
-                <div className={`flex items-center gap-2 text-sm text-center ${item.available ? 'text-green-500' : "text-gray-500"}`}>
-                  <p className={`w-2 h-2 rounded-full ${item.available ? 'bg-green-500' : "bg-gray-500"}`}></p><p>{item.available ? 'Available' : "Not Available"}</p>
+          {filterDoc.length > 0 ? (
+            filterDoc.map((item, index) => (
+              <div onClick={() => { navigate(`/appointment/${item._id}`); scrollTo(0, 0) }} className='border border-[#C9D8FF] rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500' key={index}>
+                <img className='bg-[#EAEFFF]' src={item.image} alt="" />
+                <div className='p-4'>
+                  <div className={`flex items-center gap-2 text-sm text-center ${item.available ? 'text-green-500' : "text-gray-500"}`}>
+                    <p className={`w-2 h-2 rounded-full ${item.available ? 'bg-green-500' : "bg-gray-500"}`}></p><p>{item.available ? 'Available' : "Not Available"}</p>
+                  </div>
+                  <p className='text-[#262626] text-lg font-medium'>{item.name}</p>
+                  <p className='text-[#5C5C5C] text-sm'>{item.speciality}</p>
                 </div>
-                <p className='text-[#262626] text-lg font-medium'>{item.name}</p>
-                <p className='text-[#5C5C5C] text-sm'>{item.speciality}</p>
               </div>
+            ))
+          ) : (
+            <div className='col-span-full flex flex-col items-center justify-center py-12'>
+              <p className='text-gray-600 text-lg mb-2'>No doctors found</p>
+              <p className='text-gray-500 text-sm'>
+                {speciality 
+                  ? `No doctors available for ${speciality}. Try selecting a different speciality.` 
+                  : 'No doctors are currently available. Please check back later or contact support.'}
+              </p>
+              {!backendUrl && (
+                <p className='text-red-500 text-xs mt-2'>⚠️ Backend URL not configured. Check your .env file.</p>
+              )}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
