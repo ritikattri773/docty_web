@@ -91,15 +91,21 @@ const appointmentComplete = async (req, res) => {
 // API to get all doctors list for Frontend
 const doctorList = async (req, res) => {
     try {
+        // Get all doctors (remove the available filter temporarily for testing)
+        const allDoctors = await doctorModel.find({}).select('-password')
+        console.log(`Total doctors in database: ${allDoctors.length}`)
+        
+        // Filter available doctors
+        const availableDoctors = await doctorModel.find({ available: true }).select('-password')
+        console.log(`Available doctors: ${availableDoctors.length}`)
 
-        const doctors = await doctorModel.find({ available: true }).select('-password')
-        res.json({ success: true, doctors })
+        // Return all doctors for now (change back to availableDoctors later)
+        res.json({ success: true, doctors: allDoctors })
 
     } catch (error) {
         console.log(error)
         res.json({ success: false, message: error.message })
     }
-
 }
 
 // API to change doctor availablity for Admin and Doctor Panel
